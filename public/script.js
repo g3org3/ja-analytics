@@ -2,8 +2,9 @@
   "use strict";
   var r = window.location,
     i = window.document,
-    by = {'data-domain': 'http://localhost:3000'},
-    o = { getAttribute: (attr) => by[attr], src: "http://localhost:3000/script.js" },
+    // by = {'data-domain': 'http://localhost:3000'},
+    // o = { getAttribute: (attr) => by[attr], src: "http://localhost:3000/script.js" },
+    o = i.currentScript
     s = o.getAttribute("data-api") || new URL(o.src).origin + "/api";
   function log(e) {
     console.warn("Ignoring Event: " + e);
