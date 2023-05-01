@@ -17,16 +17,16 @@ export async function post(context: APIContext) {
   const headers: Record<string, string> = {}
   for (const [key, value] of context.request.headers.entries()) {
     try {
-      headers[key.replaceAll('-', '_')] = JSON.parse(value)
+      headers[key] = JSON.parse(value)
     } catch {
-      headers[key.replaceAll('-', '_')] = value.replaceAll('"', '').replaceAll("'", '')
+      headers[key] = value.replaceAll('"', '').replaceAll("'", '')
     }
   }
   const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || context.clientAddress
   const ip_country = headers['cf-ipcountry'] || headers['x-country']
   const cf_ray = headers['cf-ray']
   const ua = uap(headers['user-agent'])
-  console.log(JSON.stringify(headers))
+  // console.log(JSON.stringify(headers))
   // console.log('/api', JSON.stringify(payload))
   // console.log('ua:', ua)
 
