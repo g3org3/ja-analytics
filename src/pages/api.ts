@@ -10,6 +10,7 @@ interface Payload {
   p: Record<string, string>
   s: string
 }
+
 export async function post(context: APIContext) {
   console.log('/api -> [start]')
   const payload = (await context.request.json()) as Payload
