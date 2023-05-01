@@ -83,7 +83,6 @@ export interface TrackEvent {
   url_endpoint: string
   url_querystring: string
   props: string
-  user_agent: string
   headers: string
   ip: string
   cf_ray?: string
