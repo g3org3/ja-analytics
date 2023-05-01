@@ -30,8 +30,21 @@ export async function post(context: APIContext) {
   for (const [key, value] of new URLSearchParams(querystring).entries()) {
     qs[key] = value
   }
+  let rhost = null
+  let rquerystring = null
+  const rqs: Record<string, string> = {}
+  if (payload.r) {
+    rhost = payload.r.split('?')[0]
+    rquerystring = payload.r.split('?')[1]
+    for (const [key, value] of new URLSearchParams(rquerystring).entries()) {
+      rqs[key] = value
+    }
+  }
+
   const event: TrackEvent = {
     referer: payload.r,
+    referer_host: rhost,
+    referer_querystring: JSON.stringify(rqs),
     origin: payload.d,
     event_name: payload.n,
     url: payload.u,

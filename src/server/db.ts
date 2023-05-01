@@ -14,11 +14,38 @@ WHERE event_name = 'pageview' AND origin = '${domain}'
 GROUP BY origin;
 `.trim()
 
+  const viewsByPageSql = `
+SELECT url_endpoint AS page, count(*) AS visitors
+FROM events
+WHERE event_name = 'pageview' AND origin = '${domain}'
+GROUP BY url_endpoint
+`
+
+  const referesSql = `
+SELECT COALESCE(referer, 'Direct / none') as referer, count(*) AS visitors
+FROM events
+WHERE event_name = 'pageview' AND origin = '${domain}'
+GROUP BY origin, referer
+`
+
+  const ipCountrySql = `
+SELECT COALESCE(ip_country, 'Direct / none') as country, count(*) AS visitors
+FROM events
+WHERE event_name = 'pageview' AND origin = '${domain}'
+GROUP BY origin, ip_country
+`
+
   const conn = connect(config)
-  const result = await conn.execute(getViewSql)
+  const pageviewsResult = await conn.execute(getViewSql)
+  const viewsByPageResult = await conn.execute(viewsByPageSql)
+  const refererResult = await conn.execute(referesSql)
+  const ipCountryResult = await conn.execute(ipCountrySql)
 
   return {
-    pageviews: result.rows.map((r) => (r as { pageviews: string }).pageviews),
+    pageviews: pageviewsResult.rows.map((r) => (r as { pageviews: string }).pageviews).join(''),
+    viewsByPage: viewsByPageResult.rows.map((r) => r as { page: string; visitors: string }),
+    referers: refererResult.rows.map((r) => r as { referer: string; visitors: string }),
+    ipCountries: ipCountryResult.rows.map((r) => r as { country: string; visitors: string }),
   }
 }
 
@@ -46,7 +73,9 @@ VALUES (${values.join(', ')});
 }
 
 export interface TrackEvent {
-  referer?: string
+  referer?: string | null
+  referer_host?: string | null
+  referer_querystring?: string | null
   origin: string
   event_name: string
   url: string
