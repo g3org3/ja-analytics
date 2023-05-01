@@ -39,7 +39,7 @@ export async function post(context: APIContext) {
   let rquerystring = null
   const rqs: Record<string, string> = {}
   if (payload.r) {
-    rhost = payload.r.split('?')[0]
+    rhost = payload.r.split('?')[0].split('/')[2]
     rquerystring = payload.r.split('?')[1]
     for (const [key, value] of new URLSearchParams(rquerystring).entries()) {
       rqs[key] = value
