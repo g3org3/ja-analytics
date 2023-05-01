@@ -4,6 +4,8 @@ import { connect } from '@planetscale/database'
 export async function post (context: APIContext) {
   const payload = await context.request.json()
   console.log('/api', JSON.stringify(payload))
+  console.log('ip', context.clientAddress)
+  console.log('headers', JSON.stringify(context.request.headers))
 
   const config = {
     host: process.env.DATABASE_HOST,
