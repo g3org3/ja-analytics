@@ -16,7 +16,11 @@ export async function post(context: APIContext) {
   const payload = (await context.request.json()) as Payload
   const headers: Record<string, string> = {}
   for (const [key, value] of context.request.headers.entries()) {
-    headers[key] = value
+    try {
+      headers[key] = JSON.stringify(JSON.parse(value))
+    } catch {
+      headers[key] = value
+    }
   }
   const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || context.clientAddress
   const ip_country = headers['cf-ipcountry'] || headers['x-country']
