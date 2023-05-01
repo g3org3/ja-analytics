@@ -19,7 +19,7 @@ export async function post(context: APIContext) {
     try {
       headers[key] = JSON.parse(value)
     } catch {
-      headers[key] = value
+      headers[key] = value.replaceAll('"', '').replaceAll("'", '')
     }
   }
   const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || context.clientAddress
