@@ -1,47 +1,49 @@
-import type { APIContext } from 'astro';
-import { connect } from '@planetscale/database'
+import type { APIContext } from 'astro'
 import uap from 'ua-parser-js'
+import { insertEvent, TrackEvent } from '~/server/db'
 
-export async function post (context: APIContext) {
+interface Payload {
+  d: string
+  r: string
+  n: string
+  u: string
+  p: Record<string, string>
+  s: string
+}
+export async function post(context: APIContext) {
   console.log('/api -> [start]')
-  const payload = await context.request.json()
+  const payload = (await context.request.json()) as Payload
   const headers: Record<string, string> = {}
   for (const [key, value] of context.request.headers.entries()) {
     headers[key] = value
   }
   const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || context.clientAddress
-  const ip_country = headers['cf-ipcountry'] || headers['x-country'] 
+  const ip_country = headers['cf-ipcountry'] || headers['x-country']
   const cf_ray = headers['cf-ray']
   const ua = uap(headers['user-agent'])
   // console.log('/api', JSON.stringify(payload))
   // console.log('ua:', ua)
 
-  const config = {
-    host: process.env.DATABASE_HOST,
-    username: process.env.DATABASE_USERNAME,
-    password: process.env.DATABASE_PASSWORD,
-  }
-  const { d: origin, r: referer, n: event_name, u: url, p: props, s: screen } = payload
-  const [host, querystring] = url.split('?')
+  const [host, querystring] = payload.u.split('?')
   const qs: Record<string, string> = {}
   for (const [key, value] of new URLSearchParams(querystring).entries()) {
     qs[key] = value
   }
-  const event = {
-    referer,
-    origin,
-    event_name,
-    url,
+  const event: TrackEvent = {
+    referer: payload.r,
+    origin: payload.d,
+    event_name: payload.n,
+    url: payload.u,
     url_host: host.split('/').filter(Boolean)[1],
-    url_endpoint: host.split('/').filter(Boolean)[2] || '/',
+    url_endpoint: `/${host.split('/').filter(Boolean).slice(2).join('/')}`,
     url_querystring: JSON.stringify(qs || {}),
-    props: JSON.stringify(props || {}),
+    props: JSON.stringify(payload.p || {}),
     user_agent: headers['user-agent'],
     headers: JSON.stringify(headers || {}),
     ip,
     cf_ray,
     ip_country,
-    screen,
+    screen: payload.s,
     browser_name: ua.browser.name,
     browser_version: ua.browser.version,
     engine_name: ua.engine.name,
@@ -53,13 +55,7 @@ export async function post (context: APIContext) {
     device_type: ua.device.type,
     cpu_arch: ua.cpu.architecture,
   }
-  const conn = connect(config)
-  const sql = `
-INSERT INTO events (${Object.keys(event).join(', ')}) 
-VALUES (${Object.values(event).map(x => x == null ? 'NULL' : "'"+x+"'").join(', ')});
-`
-  // console.log(sql)
-  await conn.execute(sql.trim())
+  await insertEvent(event)
   console.log('/api -> [done]')
 
   return new Response('created', {

@@ -1,21 +1,21 @@
 ---
 export interface Props {
-	title: string;
+  title: string
 }
 
-const { title } = Astro.props;
+const { title } = Astro.props
 ---
 
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<title>{title}</title>
-    <script defer data-domain="a.jorgeadolfo.com" src="https://a.jorgeadolfo.com/script.js"></script>
-	</head>
-	<body class="h-full w-full flex flex-col font-mono dark:bg-slate-800 dark:text-white">
-		<slot />
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <script defer data-domain="a.jorgeadolfo.com" src="http://localhost:3000/script.js"></script>
+  </head>
+  <body class="h-full bg-slate-50 w-full flex flex-col font-mono dark:bg-slate-800 dark:text-white">
+    <slot />
+  </body>
 </html>
