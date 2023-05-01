@@ -17,7 +17,7 @@ export async function post(context: APIContext) {
   const headers: Record<string, string> = {}
   for (const [key, value] of context.request.headers.entries()) {
     try {
-      headers[key] = JSON.stringify(JSON.parse(value))
+      headers[key] = JSON.parse(value)
     } catch {
       headers[key] = value
     }
