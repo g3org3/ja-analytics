@@ -36,6 +36,9 @@
           t && t.meta && (n.m = JSON.stringify(t.meta)),
           t && t.props && (n.p = t.props),
           new XMLHttpRequest());
+      if (window.screen) {
+        n.s = `${window.screen.width}x${window.screen.height}`
+      }
       a.open("POST", s, !0),
         a.setRequestHeader("Content-Type", "text/plain"),
         a.send(JSON.stringify(n)),
