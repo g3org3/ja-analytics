@@ -26,7 +26,7 @@ export async function post(context: APIContext) {
   const ip_country = headers['cf-ipcountry'] || headers['x-country']
   const cf_ray = headers['cf-ray']
   const ua = uap(headers['user-agent'])
-  console.log(headers)
+  console.log(JSON.stringify(headers))
   // console.log('/api', JSON.stringify(payload))
   // console.log('ua:', ua)
 
