@@ -178,13 +178,12 @@
       const url = window.location.href
       const payload = { message: event.message, origin, url }
       sendPostRequest('https://a.jorgeadolfo.com/error', payload)
-      // sendPostRequest('http://localhost:3000/error', payload)
       console.error('error', event)
     } catch (e) {
       console.error('catch', e)
     }
-  )
+  })
 
-console.log('error-installed')
+  console.log('error-installed')
 })();
 
