@@ -22,10 +22,10 @@ GROUP BY url_endpoint
 `
 
   const referesSql = `
-SELECT COALESCE(referer, 'Direct / none') as referer, count(*) AS visitors
+SELECT COALESCE(referer_host, 'Direct / none') as referer, count(*) AS visitors
 FROM events
 WHERE event_name = 'pageview' AND origin = '${domain}'
-GROUP BY origin, referer
+GROUP BY origin, referer_host
 `
 
   const ipCountrySql = `
@@ -35,17 +35,44 @@ WHERE event_name = 'pageview' AND origin = '${domain}'
 GROUP BY origin, ip_country
 `
 
+  const browserSql = `
+SELECT browser_name AS browser, count(*) AS visitors
+FROM events
+WHERE event_name = 'pageview' AND origin = '${domain}'
+GROUP BY browser_name
+`
+
+  const osNameSql = `
+SELECT os_name AS os, count(*) AS visitors
+FROM events
+WHERE event_name = 'pageview' AND origin = '${domain}'
+GROUP BY os_name
+`
+
+  const screensSql = `
+SELECT screen AS os, count(*) AS visitors
+FROM events
+WHERE event_name = 'pageview' AND origin = '${domain}'
+GROUP BY screen
+`
+
   const conn = connect(config)
   const pageviewsResult = await conn.execute(getViewSql)
   const viewsByPageResult = await conn.execute(viewsByPageSql)
   const refererResult = await conn.execute(referesSql)
   const ipCountryResult = await conn.execute(ipCountrySql)
+  const browserResult = await conn.execute(browserSql)
+  const osNameResult = await conn.execute(osNameSql)
+  const screensResult = await conn.execute(screensSql)
 
   return {
     pageviews: pageviewsResult.rows.map((r) => (r as { pageviews: string }).pageviews).join(''),
     viewsByPage: viewsByPageResult.rows.map((r) => r as { page: string; visitors: string }),
     referers: refererResult.rows.map((r) => r as { referer: string; visitors: string }),
     ipCountries: ipCountryResult.rows.map((r) => r as { country: string; visitors: string }),
+    browsers: browserResult.rows.map((r) => r as { browser: string; visitors: string }),
+    osnames: osNameResult.rows.map((r) => r as { os: string; visitors: string }),
+    screens: screensResult.rows.map((r) => r as { screen: string; visitors: string }),
   }
 }
 
@@ -65,6 +92,17 @@ export async function insertEvent(event: TrackEvent) {
   const values = Object.values(event).map((x) => (x == null ? 'null' : "'" + x + "'"))
   const sql = `
 INSERT INTO events (${Object.keys(event).join(', ')}) 
+VALUES (${values.join(', ')});
+`
+  // console.log(sql)
+  const conn = connect(config)
+  await conn.execute(sql.trim())
+}
+
+export async function insertAppError(event: AppError) {
+  const values = Object.values(event).map((x) => (x == null ? 'null' : "'" + x + "'"))
+  const sql = `
+INSERT INTO app_errors (${Object.keys(event).join(', ')}) 
 VALUES (${values.join(', ')});
 `
   // console.log(sql)
@@ -98,4 +136,12 @@ export interface TrackEvent {
   device_model?: string
   device_type?: string
   cpu_arch?: string
+}
+
+export interface AppError {
+  ip: string
+  headers: string
+  message: string
+  origin: string
+  url: string
 }
