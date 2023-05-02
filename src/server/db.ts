@@ -56,6 +56,13 @@ WHERE event_name = 'pageview' AND origin = '${domain}'
 GROUP BY screen
 `
 
+  const errorCountSql = `
+SELECT count(*) as count
+FROM app_errors
+WHERE origin = '${domain}'
+GROUP BY origin;
+`
+
   const conn = connect(config)
   const pageviewsResult = await conn.execute(getViewSql)
   const viewsByPageResult = await conn.execute(viewsByPageSql)
@@ -64,6 +71,7 @@ GROUP BY screen
   const browserResult = await conn.execute(browserSql)
   const osNameResult = await conn.execute(osNameSql)
   const screensResult = await conn.execute(screensSql)
+  const errorCountResult = await conn.execute(errorCountSql)
 
   return {
     pageviews: pageviewsResult.rows.map((r) => (r as { pageviews: string }).pageviews).join(''),
@@ -73,6 +81,7 @@ GROUP BY screen
     browsers: browserResult.rows.map((r) => r as { browser: string; visitors: string }),
     osnames: osNameResult.rows.map((r) => r as { os: string; visitors: string }),
     screens: screensResult.rows.map((r) => r as { screen: string; visitors: string }),
+    errorCount: errorCountResult.rows.map((r) => (r as { count: string }).count).join(''),
   }
 }
 
