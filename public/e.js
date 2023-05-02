@@ -10,13 +10,18 @@ function sendPostRequest(url, data, callback) {
   xhr.send(JSON.stringify(data))
 }
 
+var domain = window.document.currentScript.getAttribute('data-domain')
 window.addEventListener('error', (event) => {
   try {
-    const origin = window.document.currentScript.getAttribute('data-domain')
+    const origin = domain
     const url = window.location.href
     const payload = { message: event.message, origin, url }
     sendPostRequest('https://a.jorgeadolfo.com/error', payload)
-  } catch {
-    //
+    // sendPostRequest('http://localhost:3000/error', payload)
+    console.error('error', event)
+  } catch (e) {
+    console.error('catch', e)
   }
 })
+
+console.log('error-installed')
