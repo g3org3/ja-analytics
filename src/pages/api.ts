@@ -1,14 +1,24 @@
 import type { APIContext } from 'astro'
 import uap from 'ua-parser-js'
+import { Md5 } from 'ts-md5'
 import { insertEvent, TrackEvent } from '~/server/db'
 
 interface Payload {
+  v: string
   d: string
   r: string
   n: string
   u: string
   p: Record<string, string>
   s: string
+  m: string
+  tz: number
+  tzp: string
+  ps: string
+  mi: string
+  tag: string
+  webglr: string
+  webglv: string
 }
 
 export async function post(context: APIContext) {
@@ -57,7 +67,14 @@ export async function post(context: APIContext) {
     url_endpoint: `/${host.split('/').filter(Boolean).slice(2).join('/')}`,
     url_querystring: JSON.stringify(qs || {}),
     props: JSON.stringify(payload.p || {}),
+    meta: payload.m,
     headers: JSON.stringify(headers || {}),
+    timezone: payload.tzp,
+    tz_offset: String(payload.tz),
+    plugins: payload.ps,
+    mimetypes: payload.mi,
+    webgl_render: payload.webglr,
+    webgl_vendor: payload.webglv,
     ip,
     cf_ray,
     ip_country,
@@ -72,12 +89,21 @@ export async function post(context: APIContext) {
     device_model: ua.device.model,
     device_type: ua.device.type,
     cpu_arch: ua.cpu.architecture,
+    tag: new Md5().appendStr([
+      headers['user-agent'],
+      payload.tzp,
+      payload.ps,
+      payload.mi,
+      payload.webglr,
+      payload.webglv,
+      payload.s,
+    ].join('###')).end() as string,
   }
   await insertEvent(event)
   console.log('/api -> [done]')
 
   return new Response('created', {
-    status: 201,
+    status: 200,
     statusText: 'created',
   })
 }

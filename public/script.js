@@ -2,10 +2,9 @@
   "use strict";
   var r = window.location,
     i = window.document,
-    // by = {'data-domain': 'http://localhost:3000'},
-    // o = { getAttribute: (attr) => by[attr], src: "http://localhost:3000/script.js" },
     o = i.currentScript,
-    s = o.getAttribute("data-api") || new URL(o.src).origin + "/api";
+    s = o.getAttribute("data-api") || new URL(o.src).origin + "/api",
+    s_error = o.getAttribute("data-api") || new URL(o.src).origin + "/error";
   function log(e) {
     console.warn("Ignoring Event: " + e);
   }
@@ -38,7 +37,17 @@
           new XMLHttpRequest());
       if (window.screen) {
         n.s = `${window.screen.width}x${window.screen.height}`
+        n.tz = new Date().getTimezoneOffset()
+        if (Intl) {
+          n.tzp = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        }
+        n.ps = Array.from((navigator || {}).plugins, p => p.name).join(',')
+        n.mi = Array.from((navigator || {}).mimeTypes, m => m.type).join(',')
+        var wgl = getWebgl()
+        n.wglr = wgl.webglRenderer
+        n.wglv = wgl.webglVendor
       }
+      
       a.open("POST", s, !0),
         a.setRequestHeader("Content-Type", "text/plain"),
         a.send(JSON.stringify(n)),
@@ -156,7 +165,16 @@
     i.addEventListener("click", h),
     i.addEventListener("auxclick", h);
 
-  console.log('installed')
+  console.log('a-installed')
+
+  function getWebgl() {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    const webglVendor = gl && gl.getExtension('WEBGL_debug_renderer_info') && gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info').UNMASKED_VENDOR_WEBGL);
+    const webglRenderer = gl && gl.getExtension('WEBGL_debug_renderer_info') && gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info').UNMASKED_RENDERER_WEBGL);
+
+    return { webglRenderer, webglVendor }
+  }
 
 
   function sendPostRequest(url, data, callback) {
@@ -164,7 +182,7 @@
     xhr.open('POST', url, true)
     xhr.setRequestHeader('Content-Type', 'application/json')
     xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4 && xhr.status === 200) {
+      if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300 && typeof callback === 'function') {
         callback(xhr.responseText)
       }
     }
@@ -177,13 +195,13 @@
       const origin = domain
       const url = window.location.href
       const payload = { message: event.message, origin, url }
-      sendPostRequest('https://a.jorgeadolfo.com/error', payload)
+      sendPostRequest(s_error, payload)
       console.error('error', event)
     } catch (e) {
       console.error('catch', e)
     }
   })
 
-  console.log('error-installed')
+  console.log('e-installed')
 })();
 

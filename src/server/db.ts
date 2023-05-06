@@ -130,6 +130,13 @@ export interface TrackEvent {
   url_endpoint: string
   url_querystring: string
   props: string
+  meta: string
+  timezone: string
+  tz_offset: string
+  plugins: string
+  webgl_render: string
+  webgl_vendor: string
+  mimetypes: string
   headers: string
   ip: string
   cf_ray?: string
@@ -145,6 +152,7 @@ export interface TrackEvent {
   device_model?: string
   device_type?: string
   cpu_arch?: string
+  tag: string
 }
 
 export interface AppError {
